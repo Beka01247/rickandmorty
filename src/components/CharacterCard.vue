@@ -6,7 +6,6 @@
     <p><span class="prop" style="margin-top: 16px;">Status: </span> {{ character.status }}</p>
     <p><span class="prop">Species:</span> {{ character.species }}</p>
     <p><span class="prop">Gender:</span> {{ character.gender }}</p>
-    <!-- Вместо ссылок, выводим текст -->
     <p><span class="prop">Origin:</span> {{ character.origin.name }}</p>
     <p><span class="prop">Last known location:</span> {{ character.location.name }}</p>
     </div>

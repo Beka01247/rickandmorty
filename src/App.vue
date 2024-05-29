@@ -3,7 +3,7 @@
     <div class="top">
       <h1>Rick and Morty Characters</h1>
     </div>
-    <div>
+    <div style="margin-left: 27px">
       <input v-model="filters.name" placeholder="Name">
       <select v-model="filters.status">
         <option value="">Any Status</option>
@@ -13,28 +13,33 @@
       </select>
       <button @click="applyFilters">Apply</button>
     </div>
-    <div class="cards-container">
+    <div v-if="characters.length" class="cards-container">
       <CharacterCard
         v-for="character in characters"
         :key="character.id"
         :character="character"
       />
     </div>
-    <div>
+    <div v-else>
+      <h2 style="color: white; margin-left: 37px">{{ errorMessage }}</h2>
+    </div>
+    <div style="display: flex; justify-content: center; align-items: center">
       <button @click="changePage(-1)" :disabled="!prev">Prev</button>
       <button @click="changePage(1)" :disabled="!next">Next</button>
     </div>
   </div>
 </template>
 
+
 <script setup>
-import { ref, reactive, watchEffect } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import CharacterCard from './components/CharacterCard.vue';
 
 const apiUrl = 'https://rickandmortyapi.com/api/character';
 const characters = ref([]);
 const prev = ref(null);
 const next = ref(null);
+const errorMessage = ref("");  // State to hold error messages
 
 const filters = reactive({
   name: '',
@@ -45,12 +50,20 @@ const fetchData = async () => {
   let url = `${apiUrl}?name=${filters.name}&status=${filters.status}`;
   const response = await fetch(url);
   const data = await response.json();
-  characters.value = data.results;
-  prev.value = data.info.prev;
-  next.value = data.info.next;
+  if (data.results && data.results.length > 0) {
+    characters.value = data.results;
+    prev.value = data.info.prev;
+    next.value = data.info.next;
+    errorMessage.value = "";  // Reset error message when results are found
+  } else {
+    characters.value = [];  // Clear characters if none found
+    prev.value = null;
+    next.value = null;
+    errorMessage.value = "No characters found. Please try a different search.";  // Set error message
+  }
 };
 
-watchEffect(() => {
+onMounted(() => {
   fetchData();
 });
 
@@ -63,9 +76,11 @@ const changePage = async (direction) => {
   if (pageUrl) {
     const response = await fetch(pageUrl);
     const data = await response.json();
-    characters.value = data.results;
-    prev.value = data.info.prev;
-    next.value = data.info.next;
+    if (data.results) {
+      characters.value = data.results;
+      prev.value = data.info.prev;
+      next.value = data.info.next;
+    }
   }
 };
 </script>
@@ -89,6 +104,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-bottom: 10px;
 }
 
 h1 {
@@ -107,7 +123,7 @@ h1 {
 button {
   margin: 10px;
   padding: 10px 20px;
-  background-color: #4CAF50; /* Green */
+  background-color: #4CAF50;
   border: none;
   color: white;
   text-align: center;
